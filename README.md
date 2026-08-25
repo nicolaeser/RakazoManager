@@ -1,6 +1,6 @@
 # Rakazo Manager
 
-CLI for installing and operating self-hosted [Rakazo](https://github.com/elie222/rakazo) with Docker Compose. Current release: **v1.0.0**.
+CLI for installing and operating self-hosted [Rakazo](https://github.com/elie222/rakazo) with Docker Compose. Current release: **v1.0.1**.
 
 It writes one `docker-compose.yml`, pulls `ghcr.io/elie222/rakazo/app:edge`, and keeps state in host bind mounts. No app build. No `${VAR}` in Compose. TLS/Caddy stays on the host.
 
@@ -27,7 +27,7 @@ curl -fsSL https://raw.githubusercontent.com/nicolaeser/RakazoManager/main/insta
 Pin a release:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/nicolaeser/RakazoManager/main/install.sh | sh -s -- --version v1.0.0
+curl -fsSL https://raw.githubusercontent.com/nicolaeser/RakazoManager/main/install.sh | sh -s -- --version v1.0.1
 ```
 
 From this tree:

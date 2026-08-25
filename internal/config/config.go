@@ -76,6 +76,18 @@ func (cfg Config) PublicOrigin() string {
 	return fmt.Sprintf("http://127.0.0.1:%d", cfg.WebPort)
 }
 
+func (cfg Config) HostName() string {
+	parsed, err := url.Parse(cfg.PublicOrigin())
+	if err != nil {
+		return "localhost"
+	}
+	host := parsed.Hostname()
+	if host == "" || host == PublicBindAddress {
+		return "localhost"
+	}
+	return host
+}
+
 func ResolveOrigin(value string, webPort int) (string, error) {
 	value = strings.TrimSpace(value)
 	if value == "" {

@@ -206,7 +206,7 @@ func Render(cfg config.Config) []byte {
 	output.WriteString("    environment:\n")
 	output.WriteString("      NODE_ENV: production\n")
 	fmt.Fprintf(&output, "      API_PROXY_TARGET: %s\n", apiProxy)
-	fmt.Fprintf(&output, "      RAKAZO_HOST: %s\n", yamlQuote("127.0.0.1"))
+	fmt.Fprintf(&output, "      RAKAZO_HOST: %s\n", yamlQuote(cfg.HostName()))
 	fmt.Fprintf(&output, "      BETTER_AUTH_URL: %s\n", origin)
 	fmt.Fprintf(&output, "      WEB_ORIGIN: %s\n", origin)
 	output.WriteString("    env_file:\n")
@@ -253,6 +253,7 @@ func SyncManaged(existing []byte, cfg config.Config) []byte {
 	image := yamlQuote(cfg.EffectiveImage())
 	name := yamlQuote(cfg.Name)
 	origin := yamlQuote(cfg.PublicOrigin())
+	hostName := yamlQuote(cfg.HostName())
 	webPort := yamlQuote(fmt.Sprintf("%s:%d:5173", cfg.BindAddress, cfg.WebPort))
 	apiPort := yamlQuote(fmt.Sprintf("%s:%d:3100", config.DefaultBindAddress, cfg.APIPort))
 	postgresPort := yamlQuote(fmt.Sprintf("%s:%d:5432", config.DefaultBindAddress, cfg.PostgresPort))
@@ -289,6 +290,8 @@ func SyncManaged(existing []byte, cfg config.Config) []byte {
 			lines[i] = indent + "WEB_ORIGIN: " + origin
 		case strings.HasPrefix(trimmed, "API_URL:"):
 			lines[i] = indent + "API_URL: " + origin
+		case strings.HasPrefix(trimmed, "RAKAZO_HOST:"):
+			lines[i] = indent + "RAKAZO_HOST: " + hostName
 		}
 	}
 

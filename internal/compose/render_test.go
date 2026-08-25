@@ -45,6 +45,9 @@ func TestRenderUsesConfiguredOrigin(t *testing.T) {
 	if strings.Contains(rendered, `BETTER_AUTH_URL: "http://127.0.0.1:5173"`) {
 		t.Fatal("localhost origin should not be used when a public origin is set")
 	}
+	if !strings.Contains(rendered, `RAKAZO_HOST: "rakazo.example.com"`) {
+		t.Fatalf("web RAKAZO_HOST should follow the origin host:\n%s", rendered)
+	}
 }
 
 func TestSyncManagedKeepsAPIAndPostgresLoopback(t *testing.T) {

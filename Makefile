@@ -1,6 +1,6 @@
 APP := rakazo-manager
 PACKAGE := ./cmd/rakazo-manager
-VERSION ?= $(shell git describe --tags --dirty 2>/dev/null || echo v1.0.0)
+VERSION ?= $(shell git describe --tags --dirty 2>/dev/null || echo v1.0.1)
 COMMIT ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo none)
 BUILD_DATE ?= $(shell date -u +%Y-%m-%dT%H:%M:%SZ)
 LDFLAGS := -s -w -X main.version=$(VERSION) -X main.commit=$(COMMIT) -X main.date=$(BUILD_DATE)

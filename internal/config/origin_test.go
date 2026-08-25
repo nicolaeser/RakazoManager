@@ -55,6 +55,21 @@ func TestResolveOriginTurnsIPIntoHTTPWithWebPort(t *testing.T) {
 	}
 }
 
+func TestHostNameFollowsOrigin(t *testing.T) {
+	cfg := New("/tmp/stack", "rakazo-test", DefaultImage, 5173, 3100, 5433)
+	if cfg.HostName() != "127.0.0.1" {
+		t.Fatalf("default host: %s", cfg.HostName())
+	}
+	cfg.Origin = "http://10.0.10.3:5190"
+	if cfg.HostName() != "10.0.10.3" {
+		t.Fatalf("IP origin host: %s", cfg.HostName())
+	}
+	cfg.Origin = "https://rakazo.example.com"
+	if cfg.HostName() != "rakazo.example.com" {
+		t.Fatalf("domain origin host: %s", cfg.HostName())
+	}
+}
+
 func TestPublicOriginUsesConfiguredOrigin(t *testing.T) {
 	cfg := New("/tmp/stack", "rakazo-test", DefaultImage, 5173, 3100, 5433)
 	if cfg.PublicOrigin() != "http://127.0.0.1:5173" {
