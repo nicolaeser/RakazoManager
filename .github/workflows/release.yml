@@ -1,0 +1,102 @@
+name: Release
+
+on:
+  push:
+    branches: ["main"]
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  initial-release:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    env:
+      RELEASE_TAG: v1.0.0
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Check initial release
+        id: initial
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "${RELEASE_TAG}" >/dev/null 2>&1
+          then
+            echo "required=false" >> "${GITHUB_OUTPUT}"
+          else
+            echo "required=true" >> "${GITHUB_OUTPUT}"
+          fi
+
+      - name: Set up Go
+        if: steps.initial.outputs.required == 'true'
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Select release source
+        if: steps.initial.outputs.required == 'true'
+        run: |
+          if git ls-remote --exit-code --tags origin "refs/tags/${RELEASE_TAG}" >/dev/null 2>&1
+          then
+            git fetch --force origin "refs/tags/${RELEASE_TAG}:refs/tags/${RELEASE_TAG}"
+            git checkout --detach "${RELEASE_TAG}"
+          fi
+
+      - name: Verify release source
+        if: steps.initial.outputs.required == 'true'
+        run: make check
+
+      - name: Build release archives
+        if: steps.initial.outputs.required == 'true'
+        run: ./scripts/build-release.sh "${RELEASE_TAG}"
+
+      - name: Publish initial GitHub release
+        if: steps.initial.outputs.required == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >-
+          gh release create "${RELEASE_TAG}" dist/*
+          --target "$(git rev-parse HEAD)"
+          --generate-notes
+          --title "${RELEASE_TAG}"
+
+      - name: Report existing initial release
+        if: steps.initial.outputs.required != 'true'
+        run: echo "${RELEASE_TAG} already exists; no initial release was created." >> "${GITHUB_STEP_SUMMARY}"
+
+  tagged-release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Verify release source
+        run: make check
+
+      - name: Build release archives
+        run: ./scripts/build-release.sh "${GITHUB_REF_NAME}"
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "${GITHUB_REF_NAME}" dist/* --verify-tag --generate-notes
